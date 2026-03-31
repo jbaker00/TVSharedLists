@@ -1,0 +1,41 @@
+# ── Secrets (never commit real values) ────────────────────────────────────
+GoogleService-Info.plist
+*.xcconfig.secret
+Secrets.swift
+*.p8
+*.p12
+*.mobileprovision
+
+# ── Xcode ──────────────────────────────────────────────────────────────────
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+*.xcworkspace/xcshareddata/swiftpm/
+xcuserdata/
+DerivedData/
+*.moved-aside
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+
+# ── Swift Package Manager ──────────────────────────────────────────────────
+.build/
+.swiftpm/
+
+# ── macOS ──────────────────────────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# ── Build artefacts ────────────────────────────────────────────────────────
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# ── CocoaPods (not in use, but just in case) ──────────────────────────────
+Pods/

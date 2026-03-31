@@ -1,0 +1,17 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /TVShows/{showId} {
+      // Any signed-in user can read all shows
+      allow read: if request.auth != null;
+
+      // Only the owner can create a show (and the userId must match their UID)
+      allow create: if request.auth != null
+                    && request.resource.data.userId == request.auth.uid;
+
+      // Only the owner can update or delete their own show
+      allow update, delete: if request.auth != null
+                             && resource.data.userId == request.auth.uid;
+    }
+  }
+}
