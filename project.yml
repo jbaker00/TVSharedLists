@@ -35,6 +35,6 @@ targets:
         CURRENT_PROJECT_VERSION: "1"
         CODE_SIGN_STYLE: Automatic
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
-        # AdMob App ID. Defaults to Google's test App ID.
-        # Override in Secrets.xcconfig locally or via ADMOB_APP_ID env var in CI.
-        GAD_APP_ID: "ca-app-pub-3940256099942544~1458002511"
+        # AdMob App ID — safe to commit (embedded in every App Store binary).
+        # The banner ad unit ID is the sensitive value; it lives in Secrets.swift (gitignored).
+        GAD_APP_ID: "ca-app-pub-7871017136061682~1120582571"
