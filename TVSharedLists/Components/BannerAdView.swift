@@ -1,25 +1,47 @@
 import SwiftUI
 import GoogleMobileAds
 
-/// Google AdMob banner ad view.
-/// Ad unit ID is loaded from AdSecrets (Secrets.swift, gitignored).
 struct BannerAdView: UIViewRepresentable {
-    private let adUnitID = AdSecrets.bannerAdUnitID
+
+    func makeCoordinator() -> Coordinator { Coordinator() }
 
     func makeUIView(context: Context) -> BannerView {
         let banner = BannerView(adSize: AdSizeBanner)
-        banner.adUnitID = adUnitID
-        banner.rootViewController = rootViewController()
-        banner.load(Request())
+        banner.adUnitID = AdSecrets.bannerAdUnitID
+        banner.delegate = context.coordinator
         return banner
     }
 
-    func updateUIView(_ uiView: BannerView, context: Context) {}
+    /// updateUIView is called after the view is inserted into the live hierarchy,
+    /// so rootViewController is reliably non-nil here.
+    func updateUIView(_ banner: BannerView, context: Context) {
+        guard banner.rootViewController == nil,
+              let rootVC = activeRootViewController()
+        else { return }
+        banner.rootViewController = rootVC
+        banner.load(Request())
+    }
 
-    private func rootViewController() -> UIViewController? {
+    private func activeRootViewController() -> UIViewController? {
         UIApplication.shared.connectedScenes
-            .compactMap { ($0 as? UIWindowScene)?.windows.first(where: { $0.isKeyWindow }) }
-            .first?
+            .first(where: { $0.activationState == .foregroundActive })
+            .flatMap { $0 as? UIWindowScene }?
+            .windows
+            .first(where: { $0.isKeyWindow })?
             .rootViewController
+    }
+
+    // MARK: - Delegate (logs to console so you can see what AdMob is doing)
+
+    class Coordinator: NSObject, BannerViewDelegate {
+        func bannerViewDidReceiveAd(_ bannerView: BannerView) {
+            print("[AdMob] ✅ Ad loaded successfully")
+        }
+        func bannerView(_ bannerView: BannerView, didFailToReceiveAdWithError error: Error) {
+            print("[AdMob] ❌ Failed to load ad: \(error.localizedDescription)")
+        }
+        func bannerViewWillPresentScreen(_ bannerView: BannerView) {
+            print("[AdMob] Ad will present screen")
+        }
     }
 }
