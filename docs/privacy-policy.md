@@ -65,4 +65,4 @@ If you have questions about this Privacy Policy, please contact us at **jbaker00
 
 ---
 
-[← Back to TV Shared Lists](../)
+[← Back to TV Shared Lists](https://jbaker00.github.io/TVSharedLists/)
