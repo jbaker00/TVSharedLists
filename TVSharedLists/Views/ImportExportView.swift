@@ -153,7 +153,7 @@ struct ImportExportView: View {
         } header: {
             Text("Import")
         } footer: {
-            Text("Paste any direct link to a CSV file — iCloud, Dropbox, a web server, etc.")
+            Text("Paste any link to a CSV file. Google Drive and Google Sheets share links are automatically converted to direct downloads.")
         }
     }
 
@@ -213,20 +213,62 @@ struct ImportExportView: View {
             errorMessage = "That doesn't look like a valid URL. Make sure it starts with https://"
             return
         }
+        let downloadURL = Self.directDownloadURL(from: url)
+        print("[Import] Original URL: \(url)")
+        print("[Import] Download URL: \(downloadURL)")
         do {
-            let (data, response) = try await URLSession.shared.data(from: url)
+            let (data, response) = try await URLSession.shared.data(from: downloadURL)
+            let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
+            print("[Import] HTTP \(statusCode), received \(data.count) bytes")
             if let http = response as? HTTPURLResponse, !(200..<300).contains(http.statusCode) {
-                errorMessage = "The server returned an error (HTTP \(http.statusCode)). Check that the link is correct and the file is publicly accessible."
+                errorMessage = "The server returned HTTP \(http.statusCode). Check the link is correct and the file is set to public."
                 return
             }
             guard let content = String(data: data, encoding: .utf8) ?? String(data: data, encoding: .isoLatin1) else {
                 errorMessage = "Could not decode the downloaded file as text."
                 return
             }
+            let preview = String(content.prefix(300))
+            print("[Import] Content preview:\n\(preview)")
             parseAndPresentImport(content)
         } catch {
+            print("[Import] Download error: \(error)")
             errorMessage = "Download failed: \(error.localizedDescription)"
         }
+    }
+
+    /// Converts Google Drive / Sheets share links to direct-download URLs.
+    /// All other URLs are returned unchanged.
+    private static func directDownloadURL(from url: URL) -> URL {
+        let str = url.absoluteString
+
+        // Google Drive: /file/d/{ID}/view  →  uc?export=download&id={ID}
+        if let range = str.range(of: #"drive\.google\.com/file/d/([^/?]+)"#,
+                                 options: .regularExpression) {
+            let match = str[range]
+            if let idRange = match.range(of: #"(?<=/d/)([^/?]+)"#, options: .regularExpression) {
+                let fileID = String(match[idRange])
+                return URL(string: "https://drive.google.com/uc?export=download&id=\(fileID)") ?? url
+            }
+        }
+
+        // Google Drive: open?id={ID}
+        if str.contains("drive.google.com/open"),
+           let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+           let id = components.queryItems?.first(where: { $0.name == "id" })?.value {
+            return URL(string: "https://drive.google.com/uc?export=download&id=\(id)") ?? url
+        }
+
+        // Google Sheets: /spreadsheets/d/{ID}/  →  export as CSV (first sheet)
+        if let range = str.range(of: #"spreadsheets/d/([^/?]+)"#, options: .regularExpression) {
+            let match = str[range]
+            if let idRange = match.range(of: #"(?<=/d/)([^/?]+)"#, options: .regularExpression) {
+                let sheetID = String(match[idRange])
+                return URL(string: "https://docs.google.com/spreadsheets/d/\(sheetID)/export?format=csv") ?? url
+            }
+        }
+
+        return url
     }
 
     private func parseAndPresentImport(_ csvString: String) {
@@ -235,6 +277,7 @@ struct ImportExportView: View {
             pendingShows = shows
             showMergeDialog = true
         } catch {
+            print("[Import] CSV parse error: \(error.localizedDescription)")
             errorMessage = error.localizedDescription
         }
     }
