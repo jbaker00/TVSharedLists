@@ -242,14 +242,14 @@ struct ImportExportView: View {
     private static func directDownloadURL(from url: URL) -> URL {
         let str = url.absoluteString
 
-        // Google Drive: /file/d/{ID}/view  →  uc?export=download&id={ID}
-        if let range = str.range(of: #"drive\.google\.com/file/d/([^/?]+)"#,
-                                 options: .regularExpression) {
-            let match = str[range]
-            if let idRange = match.range(of: #"(?<=/d/)([^/?]+)"#, options: .regularExpression) {
-                let fileID = String(match[idRange])
-                return URL(string: "https://drive.google.com/uc?export=download&id=\(fileID)") ?? url
-            }
+        // Google Drive: /file/d/{ID}/...  →  uc?export=download&id={ID}
+        if str.contains("drive.google.com/file/d/"),
+           let fileID = str
+               .components(separatedBy: "/file/d/").last?
+               .components(separatedBy: "/").first?
+               .components(separatedBy: "?").first,
+           !fileID.isEmpty {
+            return URL(string: "https://drive.google.com/uc?export=download&id=\(fileID)") ?? url
         }
 
         // Google Drive: open?id={ID}
@@ -260,12 +260,13 @@ struct ImportExportView: View {
         }
 
         // Google Sheets: /spreadsheets/d/{ID}/  →  export as CSV (first sheet)
-        if let range = str.range(of: #"spreadsheets/d/([^/?]+)"#, options: .regularExpression) {
-            let match = str[range]
-            if let idRange = match.range(of: #"(?<=/d/)([^/?]+)"#, options: .regularExpression) {
-                let sheetID = String(match[idRange])
-                return URL(string: "https://docs.google.com/spreadsheets/d/\(sheetID)/export?format=csv") ?? url
-            }
+        if str.contains("spreadsheets/d/"),
+           let sheetID = str
+               .components(separatedBy: "/spreadsheets/d/").last?
+               .components(separatedBy: "/").first?
+               .components(separatedBy: "?").first,
+           !sheetID.isEmpty {
+            return URL(string: "https://docs.google.com/spreadsheets/d/\(sheetID)/export?format=csv") ?? url
         }
 
         return url
