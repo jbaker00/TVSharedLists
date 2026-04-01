@@ -36,6 +36,11 @@ class TVShowViewModel: ObservableObject {
         persist()
     }
 
+    func clearAllShows() {
+        shows = []
+        persist()
+    }
+
     func updateShow(_ show: TVShow) {
         guard let index = shows.firstIndex(where: { $0.id == show.id }) else { return }
         shows[index] = show

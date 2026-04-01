@@ -4,6 +4,7 @@ struct ShowListView: View {
     @ObservedObject var viewModel: TVShowViewModel
     @State private var searchText = ""
     @State private var filter: ShowFilter = .all
+    @State private var showClearConfirmation = false
 
     enum ShowFilter: String, CaseIterable {
         case all        = "All"
@@ -71,6 +72,30 @@ struct ShowListView: View {
             }
             .navigationTitle("My TV Shows")
             .searchable(text: $searchText, prompt: "Search shows, networks, notes…")
+            .toolbar {
+                if !viewModel.shows.isEmpty {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button(role: .destructive) {
+                            showClearConfirmation = true
+                        } label: {
+                            Image(systemName: "trash")
+                        }
+                        .tint(.red)
+                    }
+                }
+            }
+            .confirmationDialog(
+                "Clear All Shows?",
+                isPresented: $showClearConfirmation,
+                titleVisibility: .visible
+            ) {
+                Button("Clear All Shows", role: .destructive) {
+                    viewModel.clearAllShows()
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("This will permanently delete all \(viewModel.shows.count) shows. This cannot be undone.")
+            }
             .alert("Error", isPresented: Binding(
                 get: { viewModel.errorMessage != nil },
                 set: { if !$0 { viewModel.errorMessage = nil } }
