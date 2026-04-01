@@ -27,7 +27,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		0CDD36775945A3C976E5D32E /* TVSharedLists.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = TVSharedLists.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0CDD36775945A3C976E5D32E /* TVSharedLists.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TVSharedLists.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2B77061B9E8B038A2CC1E643 /* StarRatingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StarRatingView.swift; sourceTree = "<group>"; };
 		3399CE70F21ED4F2FE7C70B9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		50B7AF301CE857EC753E3511 /* TVShowViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVShowViewModel.swift; sourceTree = "<group>"; };
@@ -180,7 +180,6 @@
 				LastUpgradeCheck = 1500;
 				TargetAttributes = {
 					FE0F85295C7669FC32E5147A = {
-						DevelopmentTeam = 4PDB3TQD2G;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -370,14 +369,14 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 4PDB3TQD2G;
+				DEVELOPMENT_TEAM = G3P9A8Z2NP;
 				INFOPLIST_FILE = TVSharedLists/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.1;
+				MARKETING_VERSION = 2.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jamesbaker.TVSharedLists;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;
@@ -392,14 +391,14 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 4PDB3TQD2G;
+				DEVELOPMENT_TEAM = G3P9A8Z2NP;
 				INFOPLIST_FILE = TVSharedLists/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.1;
+				MARKETING_VERSION = 2.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jamesbaker.TVSharedLists;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;

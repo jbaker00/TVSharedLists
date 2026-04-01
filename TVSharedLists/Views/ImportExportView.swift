@@ -12,6 +12,8 @@ struct ImportExportView: View {
 
     // Import state
     @State private var isImportingFromFile = false
+    @State private var linkText = ""
+    @State private var isImportingFromLink = false
     @State private var pendingShows: [TVShow]?
     @State private var showMergeDialog = false
 
@@ -129,10 +131,29 @@ struct ImportExportView: View {
             } label: {
                 Label("Import from CSV File…", systemImage: "square.and.arrow.up")
             }
+
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Import from URL")
+                    .font(.subheadline.weight(.medium))
+
+                TextField("Paste a link to a CSV file…", text: $linkText)
+                    .autocorrectionDisabled()
+                    .autocapitalization(.none)
+                    .keyboardType(.URL)
+                    .font(.caption)
+                    .padding(10)
+                    .background(RoundedRectangle(cornerRadius: 10).fill(Color(.tertiarySystemBackground)))
+
+                AsyncButton(isWorking: $isImportingFromLink, label: "Import from Link", icon: "link.badge.plus") {
+                    await importFromLink()
+                }
+                .disabled(linkText.trimmingCharacters(in: .whitespaces).isEmpty)
+            }
+            .padding(.vertical, 4)
         } header: {
             Text("Import")
         } footer: {
-            Text("Select a CSV file exported from this app or formatted with the columns shown below.")
+            Text("Paste any direct link to a CSV file — iCloud, Dropbox, a web server, etc.")
         }
     }
 
@@ -183,6 +204,28 @@ struct ImportExportView: View {
                 return
             }
             parseAndPresentImport(content)
+        }
+    }
+
+    private func importFromLink() async {
+        let trimmed = linkText.trimmingCharacters(in: .whitespaces)
+        guard let url = URL(string: trimmed) else {
+            errorMessage = "That doesn't look like a valid URL. Make sure it starts with https://"
+            return
+        }
+        do {
+            let (data, response) = try await URLSession.shared.data(from: url)
+            if let http = response as? HTTPURLResponse, !(200..<300).contains(http.statusCode) {
+                errorMessage = "The server returned an error (HTTP \(http.statusCode)). Check that the link is correct and the file is publicly accessible."
+                return
+            }
+            guard let content = String(data: data, encoding: .utf8) ?? String(data: data, encoding: .isoLatin1) else {
+                errorMessage = "Could not decode the downloaded file as text."
+                return
+            }
+            parseAndPresentImport(content)
+        } catch {
+            errorMessage = "Download failed: \(error.localizedDescription)"
         }
     }
 
