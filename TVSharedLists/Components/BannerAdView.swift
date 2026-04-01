@@ -2,10 +2,9 @@ import SwiftUI
 import GoogleMobileAds
 
 /// Google AdMob banner ad view.
-/// Uses the standard test ad unit ID — replace with a real unit ID before submitting to the App Store.
+/// Ad unit ID is loaded from AdSecrets (Secrets.swift, gitignored).
 struct BannerAdView: UIViewRepresentable {
-    // Test banner ad unit ID (Google's official test ID)
-    private let adUnitID = "ca-app-pub-3940256099942544/2934735716"
+    private let adUnitID = AdSecrets.bannerAdUnitID
 
     func makeUIView(context: Context) -> BannerView {
         let banner = BannerView(adSize: AdSizeBanner)
