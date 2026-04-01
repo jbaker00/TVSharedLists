@@ -30,7 +30,7 @@ TV Shared Lists is a free iPhone and iPad app that lets you build a personal TV 
 
 ## Support
 
-Have a question or found a bug? Visit [jbaker00.github.io/TVSharedLists](https://jbaker00.github.io/TVSharedLists/) or email us at **jbaker007@gmail.com**.
+Have a question or found a bug? Visit [jbaker00.github.io/TVSharedLists](https://jbaker00.github.io/TVSharedLists/) or email us at **jbaker00@gmail.com**.
 
 ---
 

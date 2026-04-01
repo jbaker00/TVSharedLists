@@ -61,7 +61,7 @@ We may update this Privacy Policy from time to time. Changes will be posted on t
 
 ## 7. Contact
 
-If you have questions about this Privacy Policy, please contact us at **jbaker007@gmail.com**.
+If you have questions about this Privacy Policy, please contact us at **jbaker00@gmail.com**.
 
 ---
 
