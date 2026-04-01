@@ -10,8 +10,16 @@
 
 set -e
 
-SECRETS_FILE="$CI_WORKSPACE/TVSharedLists/TVSharedLists/Secrets.swift"
-INFO_PLIST="$CI_WORKSPACE/TVSharedLists/TVSharedLists/Info.plist"
+# Derive repo root from the script's location (ci_scripts/ is one level below root).
+# This avoids depending on CI_WORKSPACE which can be empty in some Xcode Cloud contexts.
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(dirname "$SCRIPT_DIR")"
+
+echo "SCRIPT_DIR: $SCRIPT_DIR"
+echo "REPO_ROOT:  $REPO_ROOT"
+
+SECRETS_FILE="$REPO_ROOT/TVSharedLists/Secrets.swift"
+INFO_PLIST="$REPO_ROOT/TVSharedLists/Info.plist"
 
 # ── Validate required variables ────────────────────────────────────────────
 MISSING=""
