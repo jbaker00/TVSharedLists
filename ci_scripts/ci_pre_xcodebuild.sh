@@ -10,8 +10,8 @@
 
 set -e
 
-SECRETS_FILE="$CI_WORKSPACE/TVSharedLists/Secrets.swift"
-INFO_PLIST="$CI_WORKSPACE/TVSharedLists/Info.plist"
+SECRETS_FILE="$CI_WORKSPACE/TVSharedLists/TVSharedLists/Secrets.swift"
+INFO_PLIST="$CI_WORKSPACE/TVSharedLists/TVSharedLists/Info.plist"
 
 # ── Validate required variables ────────────────────────────────────────────
 MISSING=""
