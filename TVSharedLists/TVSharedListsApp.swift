@@ -4,8 +4,6 @@ import AppTrackingTransparency
 
 @main
 struct TVSharedListsApp: App {
-    @Environment(\.scenePhase) private var scenePhase
-
     init() {
         MobileAds.shared.start { _ in }
     }
@@ -13,11 +11,15 @@ struct TVSharedListsApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-        }
-        .onChange(of: scenePhase) { phase in
-            if phase == .active {
-                ATTrackingManager.requestTrackingAuthorization { _ in }
-            }
+                .onAppear {
+                    // ATT prompt must be requested after the window is presented.
+                    // Using scenePhase .active is unreliable on iOS 17+ because it
+                    // fires before the window hierarchy is ready, causing the prompt
+                    // to be silently suppressed.
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                        ATTrackingManager.requestTrackingAuthorization { _ in }
+                    }
+                }
         }
     }
 }
