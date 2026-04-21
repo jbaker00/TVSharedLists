@@ -15,7 +15,7 @@ struct ShowListView: View {
 
         var icon: String {
             switch self {
-            case .all:         return "tv"
+            case .all:         return "list.bullet"
             case .wantToWatch: return "bookmark.fill"
             case .loved:       return "hand.thumbsup.fill"
             case .topRated:    return "star.fill"
@@ -70,8 +70,8 @@ struct ShowListView: View {
                     showListContent
                 }
             }
-            .navigationTitle("My TV Shows")
-            .searchable(text: $searchText, prompt: "Search shows, networks, notes…")
+            .navigationTitle("My List")
+            .searchable(text: $searchText, prompt: "Search titles, networks, notes…")
             .toolbar {
                 if !viewModel.shows.isEmpty {
                     ToolbarItem(placement: .topBarTrailing) {
@@ -136,36 +136,35 @@ struct ShowListView: View {
     // MARK: - Show list
 
     private var showListContent: some View {
-        ScrollView {
-            LazyVStack(spacing: 12) {
-                ForEach(filteredShows) { show in
-                    NavigationLink(destination: ShowDetailView(show: show, viewModel: viewModel)) {
-                        ShowCard(show: show)
-                    }
-                    .buttonStyle(.plain)
-                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                        Button(role: .destructive) {
-                            viewModel.deleteShow(show)
-                        } label: {
-                            Label("Delete", systemImage: "trash")
-                        }
-                    }
-                    .swipeActions(edge: .leading) {
-                        Button {
-                            var updated = show
-                            updated.wantToWatch.toggle()
-                            viewModel.updateShow(updated)
-                        } label: {
-                            Label(show.wantToWatch ? "Mark Watched" : "Want to Watch",
-                                  systemImage: show.wantToWatch ? "checkmark.circle" : "bookmark")
-                        }
-                        .tint(.orange)
+        List {
+            ForEach(filteredShows) { show in
+                NavigationLink(destination: ShowDetailView(show: show, viewModel: viewModel)) {
+                    ShowCard(show: show)
+                }
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                    Button(role: .destructive) {
+                        viewModel.deleteShow(show)
+                    } label: {
+                        Label("Delete", systemImage: "trash")
                     }
                 }
+                .swipeActions(edge: .leading) {
+                    Button {
+                        var updated = show
+                        updated.wantToWatch.toggle()
+                        viewModel.updateShow(updated)
+                    } label: {
+                        Label(show.wantToWatch ? "Mark Watched" : "Want to Watch",
+                              systemImage: show.wantToWatch ? "checkmark.circle" : "bookmark")
+                    }
+                    .tint(.orange)
+                }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
         }
+        .listStyle(.plain)
     }
 
     // MARK: - Empty state
@@ -173,14 +172,14 @@ struct ShowListView: View {
     private var emptyStateView: some View {
         VStack(spacing: 16) {
             Spacer()
-            Image(systemName: filter == .all && searchText.isEmpty ? "tv.slash" : "magnifyingglass")
+            Image(systemName: filter == .all && searchText.isEmpty ? "rectangle.on.rectangle.slash" : "magnifyingglass")
                 .font(.system(size: 56))
                 .foregroundStyle(.secondary.opacity(0.3))
-            Text(filter == .all && searchText.isEmpty ? "No Shows Yet" : "No Matches")
+            Text(filter == .all && searchText.isEmpty ? "Nothing Here Yet" : "No Matches")
                 .font(.title2.bold())
                 .foregroundStyle(.secondary)
             Text(filter == .all && searchText.isEmpty
-                 ? "Tap \"Add Show\" to get started"
+                 ? "Tap \"Add\" to get started"
                  : "Try a different search or filter")
                 .font(.subheadline)
                 .foregroundStyle(.tertiary)

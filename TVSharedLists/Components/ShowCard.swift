@@ -13,7 +13,7 @@ struct ShowCard: View {
 
     var body: some View {
         HStack(spacing: 14) {
-            PosterImageView(url: show.posterURL, width: 68, height: 102)
+            PosterImageView(url: show.posterURL, width: 68, height: 102, mediaType: show.mediaType)
 
             VStack(alignment: .leading, spacing: 5) {
                 HStack(spacing: 6) {
@@ -30,7 +30,7 @@ struct ShowCard: View {
                 }
 
                 if !show.network.isEmpty, show.network != "Unknown" {
-                    Label(show.network, systemImage: "tv.fill")
+                    Label(show.network, systemImage: show.mediaType == "movie" ? "film" : "tv.fill")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
@@ -92,6 +92,7 @@ struct PosterImageView: View {
     let url: String
     let width: CGFloat
     let height: CGFloat
+    var mediaType: String = "tv"
 
     var body: some View {
         Group {
@@ -100,8 +101,14 @@ struct PosterImageView: View {
                     switch phase {
                     case .success(let image):
                         image.resizable().aspectRatio(contentMode: .fill)
-                    case .failure, .empty:
+                    case .failure:
                         placeholder
+                    case .empty:
+                        ZStack {
+                            placeholder
+                            ProgressView()
+                                .tint(.white.opacity(0.8))
+                        }
                     @unknown default:
                         placeholder
                     }
@@ -124,7 +131,7 @@ struct PosterImageView: View {
                 )
             )
             .overlay(
-                Image(systemName: "tv")
+                Image(systemName: mediaType == "movie" ? "film" : "tv")
                     .font(.system(size: width * 0.32))
                     .foregroundStyle(.white.opacity(0.5))
             )

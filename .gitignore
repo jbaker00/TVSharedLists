@@ -6,6 +6,7 @@ Secrets.swift
 *.p8
 *.p12
 *.mobileprovision
+webapp/secrets.js
 
 # ── Xcode ──────────────────────────────────────────────────────────────────
 *.xcodeproj/xcuserdata/

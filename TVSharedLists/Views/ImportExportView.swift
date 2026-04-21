@@ -14,19 +14,19 @@ struct ImportExportView: View {
     @State private var isImportingFromFile = false
     @State private var linkText = ""
     @State private var isImportingFromLink = false
-    @State private var pendingShows: [TVShow]?
-    @State private var showMergeDialog = false
 
     // Feedback
-    @State private var successMessage: String?
     @State private var errorMessage: String?
 
     private var hasShows: Bool { !viewModel.shows.isEmpty }
-    private var exportFileName: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        return "TVShows-\(formatter.string(from: Date())).csv"
+
+    private var exportDateString: String {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        return f.string(from: Date())
     }
+    private var csvFileName: String    { "TVShows-\(exportDateString).csv" }
+    private var tvlistFileName: String { "TVShows-\(exportDateString).tvlist" }
 
     var body: some View {
         NavigationStack {
@@ -36,47 +36,25 @@ struct ImportExportView: View {
                 csvFormatSection
             }
             .navigationTitle("Import / Export")
-            .alert("Error", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
+            .alert("Error", isPresented: Binding(
+                get: { errorMessage != nil },
+                set: { if !$0 { errorMessage = nil } }
+            )) {
                 Button("OK") { errorMessage = nil }
             } message: { Text(errorMessage ?? "") }
-            .alert(
-                "Import \(pendingShows?.count ?? 0) Shows",
-                isPresented: $showMergeDialog,
-                presenting: pendingShows
-            ) { shows in
-                Button("Replace All (delete existing list)") {
-                    viewModel.replaceAllShows(with: shows)
-                    viewModel.fetchMissingPosters()
-                    successMessage = "Imported \(shows.count) shows. Your previous list was replaced."
-                }
-                Button("Merge (skip duplicates)") {
-                    viewModel.appendShows(shows)
-                    viewModel.fetchMissingPosters()
-                    successMessage = "Merged \(shows.count) shows into your existing list."
-                }
-                Button("Cancel", role: .cancel) { pendingShows = nil }
-            } message: { shows in
-                Text("Found \(shows.count) valid shows.\n\nReplace your existing list or merge them together?")
-            }
-            .alert("Success", isPresented: Binding(get: { successMessage != nil }, set: { if !$0 { successMessage = nil } })) {
-                Button("OK") { successMessage = nil }
-            } message: { Text(successMessage ?? "") }
             .fileExporter(
                 isPresented: $isExportingToFile,
                 document: csvDocument,
                 contentType: .commaSeparatedText,
-                defaultFilename: exportFileName
+                defaultFilename: csvFileName
             ) { result in
-                switch result {
-                case .success:
-                    successMessage = "CSV file saved successfully."
-                case .failure(let error):
+                if case .failure(let error) = result {
                     errorMessage = error.localizedDescription
                 }
             }
             .fileImporter(
                 isPresented: $isImportingFromFile,
-                allowedContentTypes: [.commaSeparatedText, .plainText]
+                allowedContentTypes: [.tvList, .commaSeparatedText, .plainText]
             ) { result in
                 handleFileImportResult(result)
             }
@@ -90,23 +68,37 @@ struct ImportExportView: View {
 
     private var exportSection: some View {
         Section {
+            // Share .tvlist — the primary sharing format for friends
             Button {
-                csvDocument = CSVDocument(content: CSVService.exportCSV(shows: viewModel.shows))
-                isExportingToFile = true
+                guard let data = TVListService.encode(viewModel.shows) else { return }
+                let tempURL = FileManager.default.temporaryDirectory
+                    .appendingPathComponent(tvlistFileName)
+                try? data.write(to: tempURL)
+                shareItems = [tempURL]
+                isSharing = true
             } label: {
-                Label("Save to CSV File…", systemImage: "square.and.arrow.down")
+                Label("Share with Friends (.tvlist)…", systemImage: "person.2.fill")
             }
             .disabled(!hasShows)
 
+            // CSV for spreadsheet tools
             Button {
                 let csv = CSVService.exportCSV(shows: viewModel.shows)
                 let tempURL = FileManager.default.temporaryDirectory
-                    .appendingPathComponent(exportFileName)
+                    .appendingPathComponent(csvFileName)
                 try? csv.write(to: tempURL, atomically: true, encoding: .utf8)
                 shareItems = [tempURL]
                 isSharing = true
             } label: {
-                Label("Share / AirDrop…", systemImage: "square.and.arrow.up")
+                Label("Share as CSV…", systemImage: "square.and.arrow.up")
+            }
+            .disabled(!hasShows)
+
+            Button {
+                csvDocument = CSVDocument(content: CSVService.exportCSV(shows: viewModel.shows))
+                isExportingToFile = true
+            } label: {
+                Label("Save CSV to Files…", systemImage: "square.and.arrow.down")
             }
             .disabled(!hasShows)
 
@@ -118,7 +110,7 @@ struct ImportExportView: View {
         } header: {
             Text("Export (\(viewModel.shows.count) shows)")
         } footer: {
-            Text("CSV files can be opened in Excel, Numbers, or Google Sheets.")
+            Text("Share a .tvlist file with friends — they can open it in the app and choose exactly which shows to import.")
         }
     }
 
@@ -129,7 +121,7 @@ struct ImportExportView: View {
             Button {
                 isImportingFromFile = true
             } label: {
-                Label("Import from CSV File…", systemImage: "square.and.arrow.up")
+                Label("Import from File…", systemImage: "square.and.arrow.up")
             }
 
             VStack(alignment: .leading, spacing: 10) {
@@ -142,7 +134,9 @@ struct ImportExportView: View {
                     .keyboardType(.URL)
                     .font(.caption)
                     .padding(10)
-                    .background(RoundedRectangle(cornerRadius: 10).fill(Color(.tertiarySystemBackground)))
+                    .background(
+                        RoundedRectangle(cornerRadius: 10).fill(Color(.tertiarySystemBackground))
+                    )
 
                 AsyncButton(isWorking: $isImportingFromLink, label: "Import from Link", icon: "link.badge.plus") {
                     await importFromLink()
@@ -153,7 +147,7 @@ struct ImportExportView: View {
         } header: {
             Text("Import")
         } footer: {
-            Text("Paste any link to a CSV file. Google Drive and Google Sheets share links are automatically converted to direct downloads.")
+            Text("Accepts .tvlist files (from friends using this app) or CSV files. Paste any Google Drive or Sheets share link to import directly from a URL.")
         }
     }
 
@@ -186,7 +180,7 @@ struct ImportExportView: View {
         }
     }
 
-    // MARK: - Import actions
+    // MARK: - Import handlers
 
     private func handleFileImportResult(_ result: Result<URL, Error>) {
         switch result {
@@ -199,11 +193,21 @@ struct ImportExportView: View {
             }
             defer { url.stopAccessingSecurityScopedResource() }
 
-            guard let content = try? String(contentsOf: url, encoding: .utf8) else {
-                errorMessage = "Could not read the file. Make sure it is a plain-text CSV."
-                return
+            if url.pathExtension.lowercased() == "tvlist" {
+                guard let data = try? Data(contentsOf: url),
+                      let shows = TVListService.decode(from: data)
+                else {
+                    errorMessage = "Could not read the .tvlist file."
+                    return
+                }
+                viewModel.pendingImportShows = shows
+            } else {
+                guard let content = try? String(contentsOf: url, encoding: .utf8) else {
+                    errorMessage = "Could not read the file. Make sure it is a plain-text CSV."
+                    return
+                }
+                parseAndPresentImport(content)
             }
-            parseAndPresentImport(content)
         }
     }
 
@@ -214,12 +218,8 @@ struct ImportExportView: View {
             return
         }
         let downloadURL = Self.directDownloadURL(from: url)
-        print("[Import] Original URL: \(url)")
-        print("[Import] Download URL: \(downloadURL)")
         do {
             let (data, response) = try await URLSession.shared.data(from: downloadURL)
-            let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
-            print("[Import] HTTP \(statusCode), received \(data.count) bytes")
             if let http = response as? HTTPURLResponse, !(200..<300).contains(http.statusCode) {
                 errorMessage = "The server returned HTTP \(http.statusCode). Check the link is correct and the file is set to public."
                 return
@@ -228,21 +228,25 @@ struct ImportExportView: View {
                 errorMessage = "Could not decode the downloaded file as text."
                 return
             }
-            let preview = String(content.prefix(300))
-            print("[Import] Content preview:\n\(preview)")
             parseAndPresentImport(content)
         } catch {
-            print("[Import] Download error: \(error)")
             errorMessage = "Download failed: \(error.localizedDescription)"
         }
     }
 
+    private func parseAndPresentImport(_ csvString: String) {
+        do {
+            let shows = try CSVService.importCSV(csvString)
+            viewModel.pendingImportShows = shows
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
     /// Converts Google Drive / Sheets share links to direct-download URLs.
-    /// All other URLs are returned unchanged.
     private static func directDownloadURL(from url: URL) -> URL {
         let str = url.absoluteString
 
-        // Google Drive: /file/d/{ID}/...  →  uc?export=download&id={ID}
         if str.contains("drive.google.com/file/d/"),
            let fileID = str
                .components(separatedBy: "/file/d/").last?
@@ -252,14 +256,12 @@ struct ImportExportView: View {
             return URL(string: "https://drive.google.com/uc?export=download&id=\(fileID)") ?? url
         }
 
-        // Google Drive: open?id={ID}
         if str.contains("drive.google.com/open"),
            let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
            let id = components.queryItems?.first(where: { $0.name == "id" })?.value {
             return URL(string: "https://drive.google.com/uc?export=download&id=\(id)") ?? url
         }
 
-        // Google Sheets: /spreadsheets/d/{ID}/  →  export as CSV (first sheet)
         if str.contains("spreadsheets/d/"),
            let sheetID = str
                .components(separatedBy: "/spreadsheets/d/").last?
@@ -270,17 +272,6 @@ struct ImportExportView: View {
         }
 
         return url
-    }
-
-    private func parseAndPresentImport(_ csvString: String) {
-        do {
-            let shows = try CSVService.importCSV(csvString)
-            pendingShows = shows
-            showMergeDialog = true
-        } catch {
-            print("[Import] CSV parse error: \(error.localizedDescription)")
-            errorMessage = error.localizedDescription
-        }
     }
 }
 
@@ -311,9 +302,7 @@ struct AsyncButton: View {
             HStack {
                 Label(label, systemImage: icon)
                 Spacer()
-                if isWorking {
-                    ProgressView().scaleEffect(0.8)
-                }
+                if isWorking { ProgressView().scaleEffect(0.8) }
             }
         }
         .disabled(isWorking)

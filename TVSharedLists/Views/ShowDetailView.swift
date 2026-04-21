@@ -81,7 +81,7 @@ struct ShowDetailView: View {
                         .background(Capsule().fill(Color.orange.opacity(0.85)))
                 }
                 if !show.network.isEmpty, show.network != "Unknown" {
-                    Label(show.network, systemImage: "tv.fill")
+                    Label(show.network, systemImage: show.mediaType == "movie" ? "film" : "tv.fill")
                         .font(.subheadline)
                         .foregroundStyle(.white.opacity(0.8))
                 }
@@ -103,7 +103,7 @@ struct ShowDetailView: View {
             endPoint: .bottomTrailing
         )
         .overlay(
-            Image(systemName: "tv")
+            Image(systemName: show.mediaType == "movie" ? "film" : "tv")
                 .font(.system(size: 72))
                 .foregroundStyle(.white.opacity(0.25))
         )

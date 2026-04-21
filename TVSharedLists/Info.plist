@@ -117,6 +117,44 @@
 		<dict><key>SKAdNetworkIdentifier</key><string>zmvfpc5aq8.skadnetwork</string></dict>
 		<dict><key>SKAdNetworkIdentifier</key><string>zq492l623r.skadnetwork</string></dict>
 	</array>
+	<!-- Declare the .tvlist file type so iOS routes tapped files to this app. -->
+	<key>UTExportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>com.jamesbaker.tvsharedlists.tvlist</string>
+			<key>UTTypeDescription</key>
+			<string>TV Shared Lists</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.json</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>tvlist</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>TV Shared Lists</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.jamesbaker.tvsharedlists.tvlist</string>
+			</array>
+		</dict>
+	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>

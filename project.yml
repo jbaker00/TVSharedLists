@@ -24,6 +24,15 @@ targets:
     dependencies:
       - package: GoogleMobileAds
         product: GoogleMobileAds
+    entitlements:
+      path: TVSharedLists/TVSharedLists.entitlements
+      properties:
+        com.apple.developer.icloud-container-identifiers:
+          - iCloud.com.jamesbaker.TVSharedLists
+        com.apple.developer.icloud-services:
+          - CloudDocuments
+        com.apple.developer.ubiquity-container-identifiers:
+          - iCloud.com.jamesbaker.TVSharedLists
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.jamesbaker.TVSharedLists

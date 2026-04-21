@@ -14,6 +14,7 @@
 		154E20C6E7B46AFC9A01072C /* ShowCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B02B3AE538E4D20AE8C69425 /* ShowCard.swift */; };
 		42437CD59D5003054166E90B /* TVShowStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFFF035EFB6892342195DD83 /* TVShowStore.swift */; };
 		51297F47D185CD93B289DEF7 /* ShowDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA9ECF805FAE995CFA62524 /* ShowDetailView.swift */; };
+		59190C9FB6DEC5ADE3CCE938 /* TVListService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28BFF4748C7C0390CAE0193D /* TVListService.swift */; };
 		73F2DC25592EC3C20E1CD820 /* TVSharedListsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF7049159A644D9195DE78B8 /* TVSharedListsApp.swift */; };
 		7BBEC568098F1A56001914F8 /* TVShow.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCEC89CF0D30DA59F1A50627 /* TVShow.swift */; };
 		97ACBC66710FD070904E3683 /* TVMazeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7B64E4DFEBE1020F42B5459 /* TVMazeService.swift */; };
@@ -22,19 +23,25 @@
 		DD519FA5B9D24DA8A92C9004 /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAA603AC47C9A3B3221661CF /* Secrets.swift */; };
 		DD6B7FE90B6C3B021001BEEB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99C27D8EBFDDA0B14978D1DF /* ContentView.swift */; };
 		DFDD29B29A1939BAE3F758D0 /* StarRatingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B77061B9E8B038A2CC1E643 /* StarRatingView.swift */; };
+		E59CBB9BD96A07CE3C06A4CE /* TMDBService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12A1793745A975A8EDC09B19 /* TMDBService.swift */; };
 		E8B82B39AFA723804AD2D82B /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DDF088602C67A4C881AECCF4 /* Preview Assets.xcassets */; };
 		F33D81A364CEF5C39DE33AD9 /* CSVService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F91E814BF5DC98124174705 /* CSVService.swift */; };
+		F5D95D3F0A1497A1343A5D0B /* ImportPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BAC64B13B4A8EA0D809BD6B /* ImportPickerView.swift */; };
 		FF85A508088F3201C95B389D /* TVShowViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50B7AF301CE857EC753E3511 /* TVShowViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		0CDD36775945A3C976E5D32E /* TVSharedLists.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TVSharedLists.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		12A1793745A975A8EDC09B19 /* TMDBService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TMDBService.swift; sourceTree = "<group>"; };
+		28BFF4748C7C0390CAE0193D /* TVListService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVListService.swift; sourceTree = "<group>"; };
 		2B77061B9E8B038A2CC1E643 /* StarRatingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StarRatingView.swift; sourceTree = "<group>"; };
 		3399CE70F21ED4F2FE7C70B9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		4BAC64B13B4A8EA0D809BD6B /* ImportPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportPickerView.swift; sourceTree = "<group>"; };
 		50B7AF301CE857EC753E3511 /* TVShowViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVShowViewModel.swift; sourceTree = "<group>"; };
 		5F91E814BF5DC98124174705 /* CSVService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVService.swift; sourceTree = "<group>"; };
 		71A1948C6D9FDB517D35EB3A /* AddShowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddShowView.swift; sourceTree = "<group>"; };
 		99C27D8EBFDDA0B14978D1DF /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		9B3AE128BB7764E7788BE1BD /* TVSharedLists.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TVSharedLists.entitlements; sourceTree = "<group>"; };
 		A9AE521BAF6957336DDA8146 /* ShowListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowListView.swift; sourceTree = "<group>"; };
 		AF7049159A644D9195DE78B8 /* TVSharedListsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVSharedListsApp.swift; sourceTree = "<group>"; };
 		B02B3AE538E4D20AE8C69425 /* ShowCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowCard.swift; sourceTree = "<group>"; };
@@ -85,6 +92,7 @@
 				71A1948C6D9FDB517D35EB3A /* AddShowView.swift */,
 				99C27D8EBFDDA0B14978D1DF /* ContentView.swift */,
 				F775DB45F0B0DAF1F0DF3565 /* ImportExportView.swift */,
+				4BAC64B13B4A8EA0D809BD6B /* ImportPickerView.swift */,
 				CDA9ECF805FAE995CFA62524 /* ShowDetailView.swift */,
 				A9AE521BAF6957336DDA8146 /* ShowListView.swift */,
 			);
@@ -121,6 +129,7 @@
 				B50490D959F972A47C7BECCB /* Assets.xcassets */,
 				3399CE70F21ED4F2FE7C70B9 /* Info.plist */,
 				CAA603AC47C9A3B3221661CF /* Secrets.swift */,
+				9B3AE128BB7764E7788BE1BD /* TVSharedLists.entitlements */,
 				AF7049159A644D9195DE78B8 /* TVSharedListsApp.swift */,
 				08D201D6E96FA9F79F997E7D /* Components */,
 				5919CB6B2A55A994B8449730 /* Models */,
@@ -136,6 +145,8 @@
 			isa = PBXGroup;
 			children = (
 				5F91E814BF5DC98124174705 /* CSVService.swift */,
+				12A1793745A975A8EDC09B19 /* TMDBService.swift */,
+				28BFF4748C7C0390CAE0193D /* TVListService.swift */,
 				B7B64E4DFEBE1020F42B5459 /* TVMazeService.swift */,
 				FFFF035EFB6892342195DD83 /* TVShowStore.swift */,
 			);
@@ -231,11 +242,14 @@
 				F33D81A364CEF5C39DE33AD9 /* CSVService.swift in Sources */,
 				DD6B7FE90B6C3B021001BEEB /* ContentView.swift in Sources */,
 				9C1A66A1834FA8BDC5BAE50B /* ImportExportView.swift in Sources */,
+				F5D95D3F0A1497A1343A5D0B /* ImportPickerView.swift in Sources */,
 				DD519FA5B9D24DA8A92C9004 /* Secrets.swift in Sources */,
 				154E20C6E7B46AFC9A01072C /* ShowCard.swift in Sources */,
 				51297F47D185CD93B289DEF7 /* ShowDetailView.swift in Sources */,
 				97BF3A18137651FBD2C61F3F /* ShowListView.swift in Sources */,
 				DFDD29B29A1939BAE3F758D0 /* StarRatingView.swift in Sources */,
+				E59CBB9BD96A07CE3C06A4CE /* TMDBService.swift in Sources */,
+				59190C9FB6DEC5ADE3CCE938 /* TVListService.swift in Sources */,
 				97ACBC66710FD070904E3683 /* TVMazeService.swift in Sources */,
 				73F2DC25592EC3C20E1CD820 /* TVSharedListsApp.swift in Sources */,
 				7BBEC568098F1A56001914F8 /* TVShow.swift in Sources */,
@@ -370,6 +384,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = TVSharedLists/TVSharedLists.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -381,7 +396,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.5;
+				MARKETING_VERSION = 2.9;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jamesbaker.TVSharedLists;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;
@@ -393,6 +408,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = TVSharedLists/TVSharedLists.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -404,7 +420,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.5;
+				MARKETING_VERSION = 2.9;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jamesbaker.TVSharedLists;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 5.0;

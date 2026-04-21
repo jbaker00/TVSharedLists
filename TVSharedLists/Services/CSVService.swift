@@ -67,9 +67,10 @@ enum CSVImportError: LocalizedError {
 
 struct CSVService {
 
-    /// Current header (10 columns). The legacy 9-column header (without Status) is also accepted on import.
-    static let headerRow = "Title,Network,Genres,Rating,Thumbs,Notes,Added Date,TVMaze ID,Summary,Status"
-    private static let legacyHeaderRow = "Title,Network,Genres,Rating,Thumbs,Notes,Added Date,TVMaze ID,Summary"
+    /// Current header (12 columns). Legacy 9-column (no Status) and 10-column (no Media Type/TMDB ID) are also accepted on import.
+    static let headerRow = "Title,Network,Genres,Rating,Thumbs,Notes,Added Date,TVMaze ID,Summary,Status,Media Type,TMDB ID"
+    private static let legacy10HeaderRow = "Title,Network,Genres,Rating,Thumbs,Notes,Added Date,TVMaze ID,Summary,Status"
+    private static let legacy9HeaderRow  = "Title,Network,Genres,Rating,Thumbs,Notes,Added Date,TVMaze ID,Summary"
 
     // MARK: - Export
 
@@ -96,7 +97,9 @@ struct CSVService {
                 formatter.string(from: show.addedAt),
                 show.tvMazeId >= 0 ? "\(show.tvMazeId)" : "-1",
                 show.summary,
-                show.wantToWatch ? "Want to Watch" : "Watched"
+                show.wantToWatch ? "Want to Watch" : "Watched",
+                show.mediaType == "movie" ? "Movie" : "TV",
+                show.tmdbId > 0 ? "\(show.tmdbId)" : "-1"
             ]
             .map { csvEscape($0) }
             .joined(separator: ",")
@@ -121,14 +124,15 @@ struct CSVService {
         guard !lines.isEmpty else { throw CSVImportError.emptyFile }
 
         let header = lines[0].trimmingCharacters(in: .whitespacesAndNewlines)
-        let isLegacy = header.lowercased() == legacyHeaderRow.lowercased()
-        let isCurrent = header.lowercased() == headerRow.lowercased()
+        let isLegacy9  = header.lowercased() == legacy9HeaderRow.lowercased()
+        let isLegacy10 = header.lowercased() == legacy10HeaderRow.lowercased()
+        let isCurrent  = header.lowercased() == headerRow.lowercased()
 
-        if !isLegacy && !isCurrent {
+        if !isLegacy9 && !isLegacy10 && !isCurrent {
             throw CSVImportError.invalidHeader(expected: headerRow, got: header)
         }
 
-        let expectedColumns = isLegacy ? 9 : 10
+        let expectedColumns = isLegacy9 ? 9 : 10
         guard lines.count > 1 else { throw CSVImportError.noValidRows }
 
         var shows: [TVShow] = []
@@ -181,11 +185,22 @@ struct CSVService {
                     .filter { !$0.isEmpty }
 
             let wantToWatch: Bool
-            if isLegacy {
+            if isLegacy9 {
                 wantToWatch = false
             } else {
                 let statusRaw = fields[9].trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
                 wantToWatch = statusRaw == "want to watch"
+            }
+
+            let mediaType: String
+            let tmdbId: Int
+            if fields.count >= 12 {
+                let typeRaw = fields[10].trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+                mediaType = typeRaw == "movie" ? "movie" : "tv"
+                tmdbId = Int(fields[11].trimmingCharacters(in: .whitespacesAndNewlines)) ?? -1
+            } else {
+                mediaType = "tv"
+                tmdbId = -1
             }
 
             shows.append(TVShow(
@@ -199,7 +214,9 @@ struct CSVService {
                 notes:       fields[5].trimmingCharacters(in: .whitespacesAndNewlines),
                 addedAt:     date,
                 tvMazeId:    tvMazeId,
-                wantToWatch: wantToWatch
+                wantToWatch: wantToWatch,
+                mediaType:   mediaType,
+                tmdbId:      tmdbId
             ))
         }
 
