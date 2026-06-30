@@ -1,3 +1,4 @@
+import CloudKit
 import SwiftUI
 
 struct ShowListView: View {
@@ -5,13 +6,22 @@ struct ShowListView: View {
     @State private var searchText = ""
     @State private var filter: ShowFilter = .all
     @State private var showClearConfirmation = false
+    @State private var showCreateList = false
+    @State private var newListName = ""
+    @State private var showManageList = false
+    @State private var createListError: String?
+    @State private var isLoadingShare = false
+    @State private var shareData: (CKShare, CKContainer)?
+    @State private var showSharingSheet = false
+    @State private var shareError: String?
+    @State private var showToMove: TVShow?
 
     enum ShowFilter: String, CaseIterable {
-        case all        = "All"
+        case all         = "All"
         case wantToWatch = "Want to Watch"
-        case loved      = "Loved"
-        case topRated   = "Top Rated"
-        case notForMe   = "Pass"
+        case loved       = "Loved"
+        case topRated    = "Top Rated"
+        case notForMe    = "Pass"
 
         var icon: String {
             switch self {
@@ -43,7 +53,6 @@ struct ShowListView: View {
                 || $0.notes.localizedCaseInsensitiveContains(searchText)
             }
         }
-
         switch filter {
         case .all:         return base
         case .wantToWatch: return base.filter { $0.wantToWatch }
@@ -70,17 +79,26 @@ struct ShowListView: View {
                     showListContent
                 }
             }
-            .navigationTitle("My List")
+            .navigationTitle(viewModel.selectedList.name)
             .searchable(text: $searchText, prompt: "Search titles, networks, notes…")
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    listSwitcherMenu
+                }
+                if !viewModel.localOnly {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        syncStatusMenu
+                    }
+                }
+                // Manage button only for non-default owned lists and shared-to-me lists
+                if viewModel.selectedList.id != TVList.myShowsID {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        manageButton
+                    }
+                }
                 if !viewModel.shows.isEmpty {
                     ToolbarItem(placement: .topBarTrailing) {
-                        Button(role: .destructive) {
-                            showClearConfirmation = true
-                        } label: {
-                            Image(systemName: "trash")
-                        }
-                        .tint(.red)
+                        trashButton
                     }
                 }
             }
@@ -89,12 +107,10 @@ struct ShowListView: View {
                 isPresented: $showClearConfirmation,
                 titleVisibility: .visible
             ) {
-                Button("Clear All Shows", role: .destructive) {
-                    viewModel.clearAllShows()
-                }
+                Button("Clear All Shows", role: .destructive) { viewModel.clearAllShows() }
                 Button("Cancel", role: .cancel) {}
             } message: {
-                Text("This will permanently delete all \(viewModel.shows.count) shows. This cannot be undone.")
+                Text("This will permanently delete all \(viewModel.shows.count) shows from \"\(viewModel.selectedList.name)\". This cannot be undone.")
             }
             .alert("Error", isPresented: Binding(
                 get: { viewModel.errorMessage != nil },
@@ -104,7 +120,160 @@ struct ShowListView: View {
             } message: {
                 Text(viewModel.errorMessage ?? "")
             }
+            .alert("New List", isPresented: $showCreateList) {
+                TextField("List name", text: $newListName)
+                Button("Create") {
+                    let name = newListName.trimmingCharacters(in: .whitespaces)
+                    guard !name.isEmpty else { return }
+                    Task {
+                        do {
+                            try await viewModel.manager.createList(name: name)
+                        } catch {
+                            createListError = error.localizedDescription
+                        }
+                    }
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("Give your new shared list a name.")
+            }
+            .alert("Couldn't create list", isPresented: Binding(
+                get: { createListError != nil },
+                set: { if !$0 { createListError = nil } }
+            )) {
+                Button("OK", role: .cancel) {}
+            } message: { Text(createListError ?? "") }
+            .sheet(isPresented: $showManageList) {
+                ManageListView(list: viewModel.selectedList, viewModel: viewModel)
+            }
+            .sheet(isPresented: $showSharingSheet) {
+                if let (share, container) = shareData {
+                    CloudSharingView(share: share, container: container) {
+                        showSharingSheet = false
+                        Task { await viewModel.manager.refreshIfNeeded() }
+                    }
+                }
+            }
+            .alert("Couldn't open sharing", isPresented: Binding(
+                get: { shareError != nil },
+                set: { if !$0 { shareError = nil } }
+            )) {
+                Button("OK", role: .cancel) {}
+            } message: { Text(shareError ?? "") }
+            .sheet(item: $showToMove) { show in
+                MoveToListView(show: show, viewModel: viewModel)
+            }
         }
+    }
+
+    // MARK: - Toolbar items
+
+    private var listSwitcherMenu: some View {
+        Menu {
+            ForEach(viewModel.lists) { list in
+                Button {
+                    withAnimation { viewModel.selectedList = list }
+                } label: {
+                    if viewModel.selectedList.id == list.id {
+                        Label(list.name, systemImage: "checkmark")
+                    } else {
+                        Text(list.name)
+                    }
+                }
+            }
+            if viewModel.iCloudAvailable && !viewModel.localOnly {
+                Divider()
+                Button {
+                    newListName = ""
+                    showCreateList = true
+                } label: {
+                    Label("New List", systemImage: "plus.circle")
+                }
+            }
+        } label: {
+            HStack(spacing: 3) {
+                Text(viewModel.selectedList.name)
+                    .font(.headline)
+                    .foregroundStyle(.primary)
+                Image(systemName: "chevron.down")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private var syncStatusMenu: some View {
+        Menu {
+            Section(viewModel.syncStatus.label) {
+                Button {
+                    Task { await viewModel.manager.refreshIfNeeded() }
+                } label: {
+                    Label("Sync Now", systemImage: "arrow.clockwise")
+                }
+                .disabled(viewModel.isLoading)
+            }
+        } label: {
+            Image(systemName: viewModel.syncStatus.icon)
+                .foregroundStyle(viewModel.syncStatus.isError ? .red : .secondary)
+        }
+    }
+
+    private var manageButton: some View {
+        Menu {
+            // Sharing — always shown for lists we own and can share
+            if viewModel.selectedList.isShareable {
+                Button {
+                    Task { await startSharing() }
+                } label: {
+                    Label("Share List…", systemImage: "person.badge.plus")
+                }
+                .disabled(isLoadingShare)
+            }
+
+            // Rename / delete — for any owned non-default list
+            if viewModel.selectedList.isOwned && viewModel.selectedList.id != TVList.myShowsID {
+                Button {
+                    showManageList = true
+                } label: {
+                    Label("Rename or Delete…", systemImage: "ellipsis.circle")
+                }
+            }
+
+            // Info — for shared-to-me lists
+            if !viewModel.selectedList.isOwned {
+                Button {
+                    showManageList = true
+                } label: {
+                    Label("List Info", systemImage: "info.circle")
+                }
+            }
+        } label: {
+            if isLoadingShare {
+                ProgressView().scaleEffect(0.8)
+            } else {
+                Image(systemName: viewModel.selectedList.isShareable ? "person.2" : "ellipsis.circle")
+            }
+        }
+    }
+
+    private func startSharing() async {
+        isLoadingShare = true
+        defer { isLoadingShare = false }
+        do {
+            shareData = try await viewModel.manager.getOrCreateShare(for: viewModel.selectedList)
+            showSharingSheet = true
+        } catch {
+            shareError = error.localizedDescription
+        }
+    }
+
+    private var trashButton: some View {
+        Button(role: .destructive) {
+            showClearConfirmation = true
+        } label: {
+            Image(systemName: "trash")
+        }
+        .tint(.red)
     }
 
     // MARK: - Filter bar
@@ -150,6 +319,14 @@ struct ShowListView: View {
                     } label: {
                         Label("Delete", systemImage: "trash")
                     }
+                    if viewModel.lists.count > 1 {
+                        Button {
+                            showToMove = show
+                        } label: {
+                            Label("Move", systemImage: "arrow.right.circle")
+                        }
+                        .tint(.indigo)
+                    }
                 }
                 .swipeActions(edge: .leading) {
                     Button {
@@ -172,7 +349,8 @@ struct ShowListView: View {
     private var emptyStateView: some View {
         VStack(spacing: 16) {
             Spacer()
-            Image(systemName: filter == .all && searchText.isEmpty ? "rectangle.on.rectangle.slash" : "magnifyingglass")
+            Image(systemName: filter == .all && searchText.isEmpty
+                  ? "rectangle.on.rectangle.slash" : "magnifyingglass")
                 .font(.system(size: 56))
                 .foregroundStyle(.secondary.opacity(0.3))
             Text(filter == .all && searchText.isEmpty ? "Nothing Here Yet" : "No Matches")

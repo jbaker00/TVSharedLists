@@ -31,6 +31,7 @@ targets:
           - iCloud.com.jamesbaker.TVSharedLists
         com.apple.developer.icloud-services:
           - CloudDocuments
+          - CloudKit
         com.apple.developer.ubiquity-container-identifiers:
           - iCloud.com.jamesbaker.TVSharedLists
     settings:
@@ -40,7 +41,7 @@ targets:
         SWIFT_VERSION: "5.0"
         INFOPLIST_FILE: TVSharedLists/Info.plist
         TARGETED_DEVICE_FAMILY: "1,2"
-        MARKETING_VERSION: "2.1"
+        MARKETING_VERSION: "3.0"
         CURRENT_PROJECT_VERSION: "1"
         CODE_SIGN_STYLE: Automatic
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon

@@ -1,111 +1,118 @@
+import Combine
 import Foundation
 import StoreKit
 import UIKit
 
 @MainActor
 class TVShowViewModel: ObservableObject {
-    @Published var shows: [TVShow] = []
-    @Published var isLoading = false
-    @Published var errorMessage: String?
-    /// Non-nil while the import picker sheet is open. Set by ImportExportView or the onOpenURL handler.
     @Published var pendingImportShows: [TVShow]?
 
-    private let store = TVShowStore()
+    let manager: TVCloudKitManager
+    private var cancellables = Set<AnyCancellable>()
     private let reviewRequestedKey = "reviewRequested"
 
     init() {
-        load()
+        manager = TVCloudKitManager()
+        // Relay manager's published changes so views observing this ViewModel refresh too
+        manager.objectWillChange
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.objectWillChange.send() }
+            .store(in: &cancellables)
+
+        Task { await manager.refreshIfNeeded() }
         fetchMissingPosters()
     }
 
-    // MARK: - Load / Save
+    // MARK: - Forwarded from manager
 
-    private func load() {
-        isLoading = true
-        shows = store.load().sorted { $0.addedAt > $1.addedAt }
-        isLoading = false
+    var shows: [TVShow] { manager.showsForSelectedList }
+    var allShows: [TVShow] { manager.shows }
+    var lists: [TVList] { manager.lists }
+    var selectedList: TVList {
+        get { manager.selectedList }
+        set { manager.selectedList = newValue }
     }
-
-    private func persist() {
-        store.save(shows)
+    var syncStatus: SyncStatus { manager.syncStatus }
+    var iCloudAvailable: Bool { manager.iCloudAvailable }
+    var localOnly: Bool {
+        get { manager.localOnly }
+        set { manager.localOnly = newValue }
+    }
+    var isLoading: Bool {
+        if case .syncing = manager.syncStatus { return true }
+        return false
+    }
+    var errorMessage: String? {
+        get {
+            if case .error(let msg) = manager.syncStatus { return msg }
+            return nil
+        }
+        set { if newValue == nil { manager.clearError() } }
     }
 
     // MARK: - CRUD
 
     func addShow(_ show: TVShow) {
-        shows.insert(show, at: 0)
-        persist()
-        if show.posterURL.isEmpty {
-            fetchMissingPosters()
-        }
+        manager.save(show: show.inList(manager.selectedList))
+        if !show.posterURL.isEmpty { return }
+        fetchMissingPosters()
         requestReviewIfAppropriate()
     }
 
-    // Prompt for a review after the user has added 3 shows, once per install.
-    private func requestReviewIfAppropriate() {
-        guard shows.count == 3,
-              !UserDefaults.standard.bool(forKey: reviewRequestedKey)
-        else { return }
-        UserDefaults.standard.set(true, forKey: reviewRequestedKey)
-        if let scene = UIApplication.shared.connectedScenes
-            .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene {
-            SKStoreReviewController.requestReview(in: scene)
-        }
-    }
-
     func deleteShow(_ show: TVShow) {
-        shows.removeAll { $0.id == show.id }
-        persist()
+        manager.delete(show)
     }
 
     func clearAllShows() {
-        shows = []
-        persist()
+        for show in manager.showsForSelectedList {
+            manager.delete(show)
+        }
     }
 
     func updateShow(_ show: TVShow) {
-        guard let index = shows.firstIndex(where: { $0.id == show.id }) else { return }
-        shows[index] = show
-        persist()
+        manager.save(show: show)
     }
 
-    // MARK: - Bulk import
+    func moveShow(_ show: TVShow, toList list: TVList) {
+        Task { await manager.move(show: show, toList: list) }
+    }
 
-    /// Replaces all existing shows with the imported list.
     func replaceAllShows(with newShows: [TVShow]) {
-        shows = newShows.sorted { $0.addedAt > $1.addedAt }
-        persist()
+        for show in manager.showsForSelectedList {
+            manager.delete(show)
+        }
+        for show in newShows.sorted(by: { $0.addedAt > $1.addedAt }) {
+            manager.save(show: show.inList(manager.selectedList))
+        }
     }
 
-    /// Merges imported shows, skipping duplicates (matched by tvMazeId when available, otherwise by title).
     func appendShows(_ newShows: [TVShow]) {
-        var result = shows
+        let existing = manager.showsForSelectedList
         for show in newShows {
             let isDuplicate: Bool
             if show.tmdbId > 0 {
-                isDuplicate = result.contains { $0.tmdbId == show.tmdbId }
+                isDuplicate = existing.contains { $0.tmdbId == show.tmdbId }
             } else if show.tvMazeId > 0 {
-                isDuplicate = result.contains { $0.tvMazeId == show.tvMazeId }
+                isDuplicate = existing.contains { $0.tvMazeId == show.tvMazeId }
             } else {
-                isDuplicate = result.contains { $0.title.lowercased() == show.title.lowercased() }
+                isDuplicate = existing.contains { $0.title.lowercased() == show.title.lowercased() }
             }
             if !isDuplicate {
-                result.append(show)
+                manager.save(show: show.inList(manager.selectedList))
             }
         }
-        shows = result.sorted { $0.addedAt > $1.addedAt }
-        persist()
     }
 
-    /// Fetches poster URLs (from TVMaze or TMDB) for any shows that have no posterURL.
-    /// Uses ID-based lookup so concurrent inserts don't corrupt indices.
+    // MARK: - Poster fetching
+
     func fetchMissingPosters() {
         Task {
-            // Snapshot IDs + metadata at the time of the call; never store raw indices
-            let targets = shows
+            let targets = manager.shows
                 .filter { $0.posterURL.isEmpty }
                 .map { (id: $0.id, tvMazeId: $0.tvMazeId, tmdbId: $0.tmdbId, mediaType: $0.mediaType) }
             guard !targets.isEmpty else { return }
+
+            var updates: [(UUID, String)] = []
 
             await withTaskGroup(of: (UUID, String)?.self) { group in
                 for target in targets {
@@ -134,13 +141,29 @@ class TVShowViewModel: ObservableObject {
                     }
                 }
                 for await result in group {
-                    if let (id, url) = result,
-                       let idx = shows.firstIndex(where: { $0.id == id }) {
-                        shows[idx].posterURL = url
-                    }
+                    if let pair = result { updates.append(pair) }
                 }
             }
-            persist()
+
+            for (id, url) in updates {
+                if var show = manager.shows.first(where: { $0.id == id }) {
+                    show.posterURL = url
+                    manager.save(show: show)
+                }
+            }
+        }
+    }
+
+    // MARK: - Review
+
+    private func requestReviewIfAppropriate() {
+        guard manager.shows.count == 3,
+              !UserDefaults.standard.bool(forKey: reviewRequestedKey)
+        else { return }
+        UserDefaults.standard.set(true, forKey: reviewRequestedKey)
+        if let scene = UIApplication.shared.connectedScenes
+            .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene {
+            SKStoreReviewController.requestReview(in: scene)
         }
     }
 }

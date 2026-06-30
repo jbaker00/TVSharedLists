@@ -14,7 +14,7 @@ struct ContentView: View {
                     .tabItem { Label("Add", systemImage: "plus.circle.fill") }
 
                 ImportExportView(viewModel: viewModel)
-                    .tabItem { Label("Import / Export", systemImage: "arrow.up.arrow.down.circle") }
+                    .tabItem { Label("Settings", systemImage: "gearshape") }
             }
             .tint(.indigo)
 
@@ -23,11 +23,6 @@ struct ContentView: View {
                 .background(Color(.tertiarySystemBackground))
         }
         .ignoresSafeArea(.keyboard)
-        // Handle .tvlist files opened from Files, AirDrop, Messages, etc.
-        .onOpenURL { url in
-            handleIncomingFile(url)
-        }
-        // Import picker — driven from both in-app imports and external file opens.
         .sheet(isPresented: Binding(
             get: { viewModel.pendingImportShows != nil },
             set: { if !$0 { viewModel.pendingImportShows = nil } }
@@ -42,7 +37,7 @@ struct ContentView: View {
                         viewModel.fetchMissingPosters()
                         viewModel.pendingImportShows = nil
                         if count > 0 {
-                            importResultMessage = "Added \(count) show\(count == 1 ? "" : "s") to your list."
+                            importResultMessage = "Added \(count) show\(count == 1 ? "" : "s") to \"\(viewModel.selectedList.name)\"."
                         }
                     },
                     onCancel: {
@@ -59,19 +54,6 @@ struct ContentView: View {
         } message: {
             Text(importResultMessage ?? "")
         }
-    }
-
-    // MARK: - External file handling
-
-    private func handleIncomingFile(_ url: URL) {
-        guard url.pathExtension.lowercased() == "tvlist" else { return }
-        let accessed = url.startAccessingSecurityScopedResource()
-        defer { if accessed { url.stopAccessingSecurityScopedResource() } }
-        guard let data = try? Data(contentsOf: url),
-              let shows = TVListService.decode(from: data),
-              !shows.isEmpty
-        else { return }
-        viewModel.pendingImportShows = shows
     }
 }
 

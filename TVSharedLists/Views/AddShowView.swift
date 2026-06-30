@@ -334,7 +334,7 @@ struct AddShowView: View {
 
     private var submitButton: some View {
         Button { submitEntry() } label: {
-            Label("Add to List", systemImage: "plus.circle.fill")
+            Label("Add to \(viewModel.selectedList.name)", systemImage: "plus.circle.fill")
                 .font(.headline)
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
