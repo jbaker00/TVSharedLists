@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TV &amp; Movie List</title>
-<script src="secrets.js" onerror="window.TMDB_READ_TOKEN=''"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -433,7 +432,7 @@
     <h1>Add to List</h1>
 
     <div id="tmdb-notice">
-      TMDB unavailable — <code>secrets.js</code> not configured. Falling back to TVMaze (TV only).
+      TMDB unavailable. Falling back to TVMaze (TV only).
     </div>
 
     <div class="form-section">
@@ -737,9 +736,6 @@ function posterPlaceholderInner(mediaType) {
 function initAddView() {
   renderStars('star-row', addRating, r => { addRating = r; renderStars('star-row', addRating, arguments.callee); });
   updateSubmitBtn();
-  if (typeof TMDB_READ_TOKEN === 'undefined' || !TMDB_READ_TOKEN || TMDB_READ_TOKEN.startsWith('YOUR_')) {
-    document.getElementById('tmdb-notice').style.display = 'block';
-  }
 }
 
 function onAddSearch(val) {
@@ -774,13 +770,25 @@ async function doSearch(query) {
   renderSearchResults();
 }
 
+// TMDB via the api-proxy Cloud Function — no token ships in the webapp.
+const TMDB_PROXY_URL = 'https://us-central1-jbaker-api-proxy.cloudfunctions.net/api/v1/tmdb';
+
+function proxyDeviceId() {
+  let id = localStorage.getItem('proxyDeviceId');
+  if (!id) {
+    id = crypto.randomUUID();
+    localStorage.setItem('proxyDeviceId', id);
+  }
+  return id;
+}
+
 async function searchTMDBMulti(query) {
-  if (typeof TMDB_READ_TOKEN === 'undefined' || !TMDB_READ_TOKEN || TMDB_READ_TOKEN.startsWith('YOUR_')) return [];
   try {
-    const res = await fetch(
-      `https://api.themoviedb.org/3/search/multi?query=${encodeURIComponent(query)}&page=1`,
-      { headers: { Authorization: `Bearer ${TMDB_READ_TOKEN}`, Accept: 'application/json' } }
-    );
+    const res = await fetch(TMDB_PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-device-id': proxyDeviceId() },
+      body: JSON.stringify({ path: 'search/multi', query: { query, page: '1' } })
+    });
     const data = await res.json();
     return (data.results || [])
       .filter(item => item.media_type === 'movie' || item.media_type === 'tv')

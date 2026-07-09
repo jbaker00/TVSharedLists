@@ -1,5 +1,34 @@
 import Foundation
 
+// MARK: - TMDB via api-proxy Cloud Function
+
+// TMDB calls go through the api-proxy (read token in Secret Manager);
+// the app ships no credentials.
+enum TMDBProxy {
+    static let endpoint = URL(string: "https://us-central1-jbaker-api-proxy.cloudfunctions.net/api/v1/tmdb")!
+
+    static var deviceId: String {
+        let key = "proxyDeviceId"
+        if let existing = UserDefaults.standard.string(forKey: key) {
+            return existing
+        }
+        let fresh = UUID().uuidString
+        UserDefaults.standard.set(fresh, forKey: key)
+        return fresh
+    }
+
+    // path: "search/multi", "tv/{id}", or "movie/{id}"; query values must be strings
+    static func request(path: String, query: [String: String] = [:]) throws -> URLRequest {
+        var request = URLRequest(url: endpoint)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(deviceId, forHTTPHeaderField: "x-device-id")
+        request.timeoutInterval = 15
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["path": path, "query": query])
+        return request
+    }
+}
+
 // MARK: - Unified search result (TVMaze + TMDB)
 
 struct MediaSearchResult: Identifiable {
@@ -148,14 +177,8 @@ class TMDBService: ObservableObject {
         isSearching = true
         defer { isSearching = false }
 
-        let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? query
-        guard let url = URL(string: "https://api.themoviedb.org/3/search/multi?query=\(encoded)&page=1") else { return }
-
-        var request = URLRequest(url: url)
-        request.setValue("Bearer \(TMDBSecrets.readAccessToken)", forHTTPHeaderField: "Authorization")
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
-
         do {
+            let request = try TMDBProxy.request(path: "search/multi", query: ["query": query, "page": "1"])
             let (data, _) = try await URLSession.shared.data(for: request)
             let resp = try JSONDecoder().decode(TMDBSearchResponse<TMDBMultiItem>.self, from: data)
             multiResults = Array(resp.results.compactMap { $0.asMediaResult() }.prefix(10))

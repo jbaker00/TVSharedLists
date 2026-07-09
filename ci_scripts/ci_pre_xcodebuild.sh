@@ -7,7 +7,7 @@
 # Required secrets (Xcode Cloud → Workflow → Environment → Secrets):
 #   ADMOB_APP_ID     ← AdMob App ID  (ca-app-pub-XXXXXXXXXXXXXXXX~XXXXXXXXXX)
 #   ADMOB_BANNER_ID  ← Banner ad unit ID (ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXXXX)
-#   TMDB_READ_TOKEN  ← TMDB API Read Access Token (from themoviedb.org/settings/api)
+# TMDB calls go through the api-proxy Cloud Function — no token needed.
 
 set -e
 
@@ -24,7 +24,7 @@ INFO_PLIST="$REPO_ROOT/TVSharedLists/Info.plist"
 
 # ── Validate required variables ────────────────────────────────────────────
 MISSING=""
-for VAR in ADMOB_APP_ID ADMOB_BANNER_ID TMDB_READ_TOKEN; do
+for VAR in ADMOB_APP_ID ADMOB_BANNER_ID; do
     eval VALUE=\$$VAR
     if [ -z "$VALUE" ]; then
         MISSING="$MISSING $VAR"
@@ -44,9 +44,7 @@ enum AdSecrets {
     static let gadAppID       = "${ADMOB_APP_ID}"
     static let bannerAdUnitID = "${ADMOB_BANNER_ID}"
 }
-enum TMDBSecrets {
-    static let readAccessToken = "${TMDB_READ_TOKEN}"
-}
+// TMDB calls go through the api-proxy Cloud Function — no token ships in the app.
 SWIFT
 
 echo "Secrets.swift generated."

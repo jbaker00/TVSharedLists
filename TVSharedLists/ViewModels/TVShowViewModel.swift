@@ -128,9 +128,7 @@ class TVShowViewModel: ObservableObject {
                             let path = target.mediaType == "movie"
                                 ? "movie/\(target.tmdbId)"
                                 : "tv/\(target.tmdbId)"
-                            guard let url = URL(string: "https://api.themoviedb.org/3/\(path)") else { return nil }
-                            var request = URLRequest(url: url)
-                            request.setValue("Bearer \(TMDBSecrets.readAccessToken)", forHTTPHeaderField: "Authorization")
+                            guard let request = try? TMDBProxy.request(path: path) else { return nil }
                             guard let (data, _) = try? await URLSession.shared.data(for: request),
                                   let json = try? JSONDecoder().decode(TMDBShowSlim.self, from: data),
                                   let posterPath = json.posterPath, !posterPath.isEmpty
