@@ -1,5 +1,9 @@
 {
   "firestore": {
     "rules": "firestore.rules"
+  },
+  "hosting": {
+    "public": "webapp",
+    "ignore": ["secrets.js", "secrets.template.js", "**/.*"]
   }
 }
