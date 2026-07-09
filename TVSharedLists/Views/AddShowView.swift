@@ -68,6 +68,10 @@ struct AddShowView: View {
             .navigationTitle("Add to List")
             .navigationBarTitleDisplayMode(.large)
             .onChange(of: searchQuery) { newValue in
+                // Ignore the programmatic change made by selectResult(), which
+                // fills the field with the picked title — clearing the selection
+                // here would silently save the entry without poster/IDs.
+                if newValue == selectedResult?.displayTitle { return }
                 selectedResult = nil
                 tvMaze.clear()
                 tmdb.clear()
