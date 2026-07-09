@@ -1,4 +1,5 @@
 import Combine
+import FirebaseAnalytics
 import Foundation
 import StoreKit
 import UIKit
@@ -54,6 +55,10 @@ class TVShowViewModel: ObservableObject {
 
     func addShow(_ show: TVShow) {
         manager.save(show: show.inList(manager.selectedList))
+        Analytics.logEvent("show_added", parameters: [
+            "media_type": show.mediaType,
+            "want_to_watch": show.wantToWatch ? "true" : "false",
+        ])
         if !show.posterURL.isEmpty { return }
         fetchMissingPosters()
         requestReviewIfAppropriate()

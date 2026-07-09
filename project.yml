@@ -9,6 +9,9 @@ packages:
   GoogleMobileAds:
     url: https://github.com/googleads/swift-package-manager-google-mobile-ads
     from: "12.0.0"
+  Firebase:
+    url: https://github.com/firebase/firebase-ios-sdk
+    from: "11.0.0"
 
 targets:
   TVSharedLists:
@@ -21,9 +24,12 @@ targets:
       - path: TVSharedLists/Info.plist
       - path: TVSharedLists/Assets.xcassets
       - path: TVSharedLists/Preview Content
+      - path: TVSharedLists/GoogleService-Info.plist
     dependencies:
       - package: GoogleMobileAds
         product: GoogleMobileAds
+      - package: Firebase
+        product: FirebaseAnalytics
     entitlements:
       path: TVSharedLists/TVSharedLists.entitlements
       properties:

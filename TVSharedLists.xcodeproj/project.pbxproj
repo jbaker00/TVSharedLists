@@ -14,11 +14,13 @@
 		126F712FE65BD0EDC5FD41BC /* TVList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FE03608DB1FA6D24C0AC880 /* TVList.swift */; };
 		154E20C6E7B46AFC9A01072C /* ShowCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B02B3AE538E4D20AE8C69425 /* ShowCard.swift */; };
 		18BB913256BAC9AD2041C24D /* TVCloudKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17321DDEB9FB3C258C99D773 /* TVCloudKitManager.swift */; };
+		1EE4F6F18686868CBD0B0FBE /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 90A3FDE8DD64E28D26DAF15D /* GoogleService-Info.plist */; };
 		45836EE39DAAF5C2DE60C91A /* MoveToListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C4070F496C35200253C7B27 /* MoveToListView.swift */; };
 		51297F47D185CD93B289DEF7 /* ShowDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA9ECF805FAE995CFA62524 /* ShowDetailView.swift */; };
 		5CB2B734517AAE1E5B7C203C /* CloudSharingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EA1096669BA6C76E7D4EEB2 /* CloudSharingView.swift */; };
 		73F2DC25592EC3C20E1CD820 /* TVSharedListsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF7049159A644D9195DE78B8 /* TVSharedListsApp.swift */; };
 		7BBEC568098F1A56001914F8 /* TVShow.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCEC89CF0D30DA59F1A50627 /* TVShow.swift */; };
+		7D08DBC3068C8C4332E73037 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 020133DD92898B73D59239D3 /* FirebaseAnalytics */; };
 		97ACBC66710FD070904E3683 /* TVMazeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7B64E4DFEBE1020F42B5459 /* TVMazeService.swift */; };
 		97BF3A18137651FBD2C61F3F /* ShowListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9AE521BAF6957336DDA8146 /* ShowListView.swift */; };
 		9C1A66A1834FA8BDC5BAE50B /* ImportExportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F775DB45F0B0DAF1F0DF3565 /* ImportExportView.swift */; };
@@ -47,6 +49,7 @@
 		6FE03608DB1FA6D24C0AC880 /* TVList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVList.swift; sourceTree = "<group>"; };
 		71A1948C6D9FDB517D35EB3A /* AddShowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddShowView.swift; sourceTree = "<group>"; };
 		8C4070F496C35200253C7B27 /* MoveToListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoveToListView.swift; sourceTree = "<group>"; };
+		90A3FDE8DD64E28D26DAF15D /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		99C27D8EBFDDA0B14978D1DF /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		9B3AE128BB7764E7788BE1BD /* TVSharedLists.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TVSharedLists.entitlements; sourceTree = "<group>"; };
 		A9AE521BAF6957336DDA8146 /* ShowListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowListView.swift; sourceTree = "<group>"; };
@@ -68,6 +71,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0352E5236F244B5C7BF5F1EB /* GoogleMobileAds in Frameworks */,
+				7D08DBC3068C8C4332E73037 /* FirebaseAnalytics in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -137,6 +141,7 @@
 			isa = PBXGroup;
 			children = (
 				B50490D959F972A47C7BECCB /* Assets.xcassets */,
+				90A3FDE8DD64E28D26DAF15D /* GoogleService-Info.plist */,
 				3399CE70F21ED4F2FE7C70B9 /* Info.plist */,
 				CAA603AC47C9A3B3221661CF /* Secrets.swift */,
 				9B3AE128BB7764E7788BE1BD /* TVSharedLists.entitlements */,
@@ -188,6 +193,7 @@
 			name = TVSharedLists;
 			packageProductDependencies = (
 				1F562081493FB4D212CBE329 /* GoogleMobileAds */,
+				020133DD92898B73D59239D3 /* FirebaseAnalytics */,
 			);
 			productName = TVSharedLists;
 			productReference = 0CDD36775945A3C976E5D32E /* TVSharedLists.app */;
@@ -218,6 +224,7 @@
 			mainGroup = 29DD13187A514BD624F2305A;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				35AD7E6F3A48DD3D2D22DE00 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				6C30C991FD2C9B889CA1115F /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -236,6 +243,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				09554BC6516DEDC98AF8119A /* Assets.xcassets in Resources */,
+				1EE4F6F18686868CBD0B0FBE /* GoogleService-Info.plist in Resources */,
 				E8B82B39AFA723804AD2D82B /* Preview Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -465,6 +473,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		35AD7E6F3A48DD3D2D22DE00 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.0.0;
+			};
+		};
 		6C30C991FD2C9B889CA1115F /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads";
@@ -476,6 +492,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		020133DD92898B73D59239D3 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 35AD7E6F3A48DD3D2D22DE00 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
 		1F562081493FB4D212CBE329 /* GoogleMobileAds */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 6C30C991FD2C9B889CA1115F /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;

@@ -2,12 +2,14 @@ import CloudKit
 import SwiftUI
 import GoogleMobileAds
 import AppTrackingTransparency
+import FirebaseCore
 
 @main
 struct TVSharedListsApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     init() {
+        FirebaseApp.configure()
         MobileAds.shared.start { _ in }
     }
 
