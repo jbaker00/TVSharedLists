@@ -41,3 +41,6 @@ DerivedData/
 
 # ── CocoaPods (not in use, but just in case) ──────────────────────────────
 Pods/
+
+# Firebase hosting cache
+.firebase/
