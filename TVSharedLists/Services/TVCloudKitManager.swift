@@ -1,4 +1,5 @@
 import CloudKit
+import FirebaseAnalytics
 import Foundation
 
 enum SyncStatus {
@@ -169,6 +170,9 @@ class TVCloudKitManager: ObservableObject {
         meta["name"] = name as NSString
         _ = try await privateDB.modifyRecords(saving: [meta], deleting: [], savePolicy: .allKeys)
         lists.append(TVList(ownedZone: zone, name: name))
+        Analytics.logEvent("list_created", parameters: [
+            "list_count": lists.count,
+        ])
     }
 
     func renameList(_ list: TVList, to name: String) async throws {
@@ -209,6 +213,9 @@ class TVCloudKitManager: ObservableObject {
         share[CKShare.SystemFieldKey.title] = list.name as CKRecordValue
         share.publicPermission = .none
         _ = try await privateDB.modifyRecords(saving: [share], deleting: [], savePolicy: .allKeys)
+        Analytics.logEvent("list_shared", parameters: [
+            "show_count": shows.filter { $0.listID == list.id }.count,
+        ])
         return (share, ckContainer)
     }
 

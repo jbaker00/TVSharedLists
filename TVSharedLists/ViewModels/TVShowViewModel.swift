@@ -66,6 +66,9 @@ class TVShowViewModel: ObservableObject {
 
     func deleteShow(_ show: TVShow) {
         manager.delete(show)
+        Analytics.logEvent("show_deleted", parameters: [
+            "media_type": show.mediaType,
+        ])
     }
 
     func clearAllShows() {
@@ -75,10 +78,20 @@ class TVShowViewModel: ObservableObject {
     }
 
     func updateShow(_ show: TVShow) {
+        if let old = manager.shows.first(where: { $0.id == show.id }),
+           old.rating != show.rating || old.thumbs != show.thumbs {
+            Analytics.logEvent("show_rated", parameters: [
+                "rating": show.rating,
+                "thumbs": show.thumbs,
+            ])
+        }
         manager.save(show: show)
     }
 
     func moveShow(_ show: TVShow, toList list: TVList) {
+        Analytics.logEvent("show_moved", parameters: [
+            "to_shared_list": list.isOwned ? "false" : "true",
+        ])
         Task { await manager.move(show: show, toList: list) }
     }
 
@@ -93,6 +106,7 @@ class TVShowViewModel: ObservableObject {
 
     func appendShows(_ newShows: [TVShow]) {
         let existing = manager.showsForSelectedList
+        var addedCount = 0
         for show in newShows {
             let isDuplicate: Bool
             if show.tmdbId > 0 {
@@ -104,7 +118,13 @@ class TVShowViewModel: ObservableObject {
             }
             if !isDuplicate {
                 manager.save(show: show.inList(manager.selectedList))
+                addedCount += 1
             }
+        }
+        if addedCount > 0 {
+            Analytics.logEvent("csv_import", parameters: [
+                "show_count": addedCount,
+            ])
         }
     }
 

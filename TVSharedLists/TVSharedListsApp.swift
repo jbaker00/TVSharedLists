@@ -2,6 +2,7 @@ import CloudKit
 import SwiftUI
 import GoogleMobileAds
 import AppTrackingTransparency
+import FirebaseAnalytics
 import FirebaseCore
 
 @main
@@ -34,6 +35,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         Task { @MainActor in
             do {
                 try await container.accept(cloudKitShareMetadata)
+                Analytics.logEvent("list_joined", parameters: [:])
                 // Post a notification so any live TVCloudKitManager can refresh
                 NotificationCenter.default.post(name: .tvCloudKitShareAccepted, object: nil)
             } catch {

@@ -1,3 +1,4 @@
+import FirebaseAnalytics
 import SwiftUI
 import UniformTypeIdentifiers
 
@@ -98,6 +99,9 @@ struct ImportExportView: View {
             Button {
                 csvDocument = CSVDocument(content: CSVService.exportCSV(shows: viewModel.allShows))
                 isExportingToFile = true
+                Analytics.logEvent("csv_export", parameters: [
+                    "show_count": viewModel.allShows.count,
+                ])
             } label: {
                 Label("Export All Shows to CSV…", systemImage: "square.and.arrow.down")
             }
