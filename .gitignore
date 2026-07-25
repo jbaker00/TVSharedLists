@@ -44,3 +44,6 @@ Pods/
 
 # Firebase hosting cache
 .firebase/
+
+# Xcode archives / ASC upload artifacts
+build/
