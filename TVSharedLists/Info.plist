@@ -27,7 +27,7 @@
 	<string>$(GAD_APP_ID)</string>
 	<!-- Required for App Tracking Transparency (iOS 14.5+) — needed for personalized ads. -->
 	<key>NSUserTrackingUsageDescription</key>
-	<string>This identifier will be used to deliver personalized ads to you.</string>
+	<string>TV Shared Lists is free and ad-supported. Allowing this lets your device's advertising identifier be shared with our ad provider so the ads you see match your interests — for example, ads for streaming services and new shows instead of unrelated products — and so we can tell which ads led to an install. Decline and your lists work exactly the same; you'll just see less relevant ads.</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>SKAdNetworkItems</key>
